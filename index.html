@@ -2399,124 +2399,135 @@ function aplicarControleRotas(dataSelecionada) {
 
 // Substitua a função renderCalendar existente por esta:
 
-function renderCalendar(month,year){
- const calendar=document.getElementById('calendar');
- const monthYearDisplay=document.getElementById('currentMonthYear');
- if(!calendar||!monthYearDisplay)return;
- 
- calendar.innerHTML='';
- const monthNames=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
- monthYearDisplay.textContent=`${monthNames[month]} ${year}`;
- 
- const firstDay=new Date(year,month,1);
- const startingDay=firstDay.getDay();
- const daysInMonth=new Date(year,month+1,0).getDate();
- const today=new Date();
- today.setHours(0,0,0,0);
- 
- const minDate=new Date();
- minDate.setDate(today.getDate()+prazoMinimo);
- minDate.setHours(0,0,0,0);
- 
- const weekdays=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
- for(let i=0;i<7;i++){
-  const dayHeader=document.createElement('div');
-  dayHeader.classList.add('calendar-day-header');
-  dayHeader.textContent=weekdays[i];
-  calendar.appendChild(dayHeader);
- }
- 
- for(let i=0;i<startingDay;i++){
-  const emptyDay=document.createElement('div');
-  emptyDay.classList.add('calendar-day','disabled');
-  calendar.appendChild(emptyDay);
- }
- 
- for(let day=1;day<=daysInMonth;day++){
-  const dayElement=document.createElement('div');
-  dayElement.classList.add('calendar-day');
-  dayElement.textContent=day;
-  const currentDate=new Date(year,month,day);
-  const dateString=formatDateForComparison(currentDate);
-  
-  // PRIORIDADE 1: Verificar se é data especial PRIMEIRO
-  if(specialDates[dateString]){
-   dayElement.classList.add('special-day');
-   // Não marca como disabled mesmo sendo feriado, pois tem horários especiais
-  }
-  // PRIORIDADE 2: Verificar se é data sem entrega
-  else if(noDeliveryDates.includes(dateString)){
-   dayElement.classList.add('no-delivery','disabled');
-  }
-  // PRIORIDADE 3: Verificar se é data passada
-  else if(currentDate<today){
-   dayElement.classList.add('disabled');
-  }
-  // PRIORIDADE 4: Verificar prazo mínimo
-  else if(currentDate<minDate){
-   dayElement.classList.add('disabled');
-   dayElement.title=`Prazo mínimo: ${prazoMinimo} dia(s)`;
-  }
-  // PRIORIDADE 5: Verificar disponibilidade de horários para hoje
-  else if(currentDate.getDate()===today.getDate()&&currentDate.getMonth()===today.getMonth()&&currentDate.getFullYear()===today.getFullYear()){
-   const now=new Date();
-   const dayOfWeek=currentDate.getDay();
-   let routes=[];
-   
-   // Verifica se hoje é data especial
-   if(specialDates[dateString]){
-    routes=specialDates[dateString].horarios;
-   }else if(dayOfWeek===0){
-    routes=routeTimes.sunday;
-   }else if(dayOfWeek===6){
-    routes=routeTimes.saturday;
-   }else{
-    routes=routeTimes.weekday;
-   }
-   
-   let hasAvailableRoute=false;
-   routes.forEach(route=>{
-    const [startHour,startMinute]=route.start.split(':').map(Number);
-    const startTimeInMinutes=startHour*60+startMinute;
-    const currentTimeInMinutes=now.getHours()*60+now.getMinutes();
-    const timeUntilStart=startTimeInMinutes-currentTimeInMinutes;
-    if(timeUntilStart>=30){
-     hasAvailableRoute=true;
+function renderCalendar(month, year) {
+    const calendar = document.getElementById('calendar');
+    const monthYearDisplay = document.getElementById('currentMonthYear');
+    if (!calendar || !monthYearDisplay) return;
+    
+    calendar.innerHTML = '';
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+    
+    const firstDay = new Date(year, month, 1);
+    const startingDay = firstDay.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // DEBUG - Mostrar data atual
+    console.log('📅 Data atual (hoje):', today.toISOString().split('T')[0]);
+    console.log('📅 Mês/ano sendo renderizado:', month + 1, year);
+    
+    const minDate = new Date();
+    minDate.setDate(today.getDate() + prazoMinimo);
+    minDate.setHours(0, 0, 0, 0);
+    
+    const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    for (let i = 0; i < 7; i++) {
+        const dayHeader = document.createElement('div');
+        dayHeader.classList.add('calendar-day-header');
+        dayHeader.textContent = weekdays[i];
+        calendar.appendChild(dayHeader);
     }
-   });
-   
-   if(!hasAvailableRoute){
-    dayElement.classList.add('disabled');
-   }
-  }
-  
-  if(!dayElement.classList.contains('disabled')){
-   dayElement.addEventListener('click',function(){
-    selectDate(currentDate);
-   });
-  }
-  
-  if(selectedDate&&selectedDate.getDate()===day&&selectedDate.getMonth()===month&&selectedDate.getFullYear()===year){
-   dayElement.classList.add('selected');
-  }
-  
-  calendar.appendChild(dayElement);
- }
- 
- if(prazoMinimo>0){
-  const infoMessage=document.createElement('div');
-  infoMessage.className='alert alert-info';
-  infoMessage.style.marginTop='10px';
-  infoMessage.style.fontSize='12px';
-  infoMessage.innerHTML=`<i class="fas fa-info-circle"></i> <strong>Prazo mínimo:</strong> ${prazoMinimo} dia(s)`;
-  const calendarContainer=document.getElementById('calendarContainer');
-  if(calendarContainer){
-   calendarContainer.appendChild(infoMessage);
-  }
- }
+    
+    for (let i = 0; i < startingDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.classList.add('calendar-day', 'disabled');
+        calendar.appendChild(emptyDay);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.classList.add('calendar-day');
+        dayElement.textContent = day;
+        const currentDate = new Date(year, month, day);
+        const dateString = formatDateForComparison(currentDate);
+        
+        // LOG para debug da data de hoje
+        if (dateString === '2026-03-08') {
+            console.log('🎯 ENCONTRADO 08/03/2026 no calendário!');
+        }
+        
+        // PRIORIDADE 1: Data especial (NUNCA desabilitar)
+        if (specialDates[dateString]) {
+            console.log('✅ Data especial encontrada:', dateString, specialDates[dateString].descricao);
+            dayElement.classList.add('special-day');
+            // NÃO adiciona classe disabled para data especial
+        }
+        // PRIORIDADE 2: Data sem entrega (só se NÃO for especial)
+        else if (noDeliveryDates.includes(dateString)) {
+            dayElement.classList.add('no-delivery', 'disabled');
+        }
+        // PRIORIDADE 3: Data passada
+        else if (currentDate < today) {
+            dayElement.classList.add('disabled');
+        }
+        // PRIORIDADE 4: Prazo mínimo
+        else if (currentDate < minDate) {
+            dayElement.classList.add('disabled');
+            dayElement.title = `Prazo mínimo: ${prazoMinimo} dia(s)`;
+        }
+        // PRIORIDADE 5: Hoje - verificar horários disponíveis
+        else if (currentDate.getDate() === today.getDate() && 
+                 currentDate.getMonth() === today.getMonth() && 
+                 currentDate.getFullYear() === today.getFullYear()) {
+            
+            const now = new Date();
+            const dayOfWeek = currentDate.getDay();
+            let routes = [];
+            
+            // Verifica se hoje é data especial
+            if (specialDates[dateString]) {
+                routes = specialDates[dateString].horarios;
+            } else if (dayOfWeek === 0) {
+                routes = routeTimes.sunday;
+            } else if (dayOfWeek === 6) {
+                routes = routeTimes.saturday;
+            } else {
+                routes = routeTimes.weekday;
+            }
+            
+            let hasAvailableRoute = false;
+            routes.forEach(route => {
+                const [startHour, startMinute] = route.start.split(':').map(Number);
+                const startTimeInMinutes = startHour * 60 + startMinute;
+                const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+                const timeUntilStart = startTimeInMinutes - currentTimeInMinutes;
+                if (timeUntilStart >= 30) {
+                    hasAvailableRoute = true;
+                }
+            });
+            
+            if (!hasAvailableRoute) {
+                dayElement.classList.add('disabled');
+            }
+        }
+        
+        // Adicionar evento de clique apenas se NÃO estiver desabilitado
+        if (!dayElement.classList.contains('disabled')) {
+            dayElement.addEventListener('click', function () {
+                selectDate(currentDate);
+            });
+        } else {
+            // Mesmo desabilitado, datas especiais ainda podem ser clicadas?
+            // Se quiser permitir clique em datas especiais mesmo desabilitadas:
+            if (specialDates[dateString]) {
+                dayElement.addEventListener('click', function () {
+                    selectDate(currentDate);
+                });
+                dayElement.classList.remove('disabled'); // Remove disabled se foi adicionado
+            }
+        }
+        
+        if (selectedDate && selectedDate.getDate() === day && 
+            selectedDate.getMonth() === month && 
+            selectedDate.getFullYear() === year) {
+            dayElement.classList.add('selected');
+        }
+        
+        calendar.appendChild(dayElement);
+    }
 }
-
-// Substitua a função selectDate existente por esta:
 
 function selectDate(date){
     const dateString = formatDateForComparison(date);
