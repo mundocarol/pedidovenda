@@ -2397,6 +2397,8 @@ function aplicarControleRotas(dataSelecionada) {
     return false;
 }
 
+// Substitua a função renderCalendar existente por esta:
+
 function renderCalendar(month,year){
  const calendar=document.getElementById('calendar');
  const monthYearDisplay=document.getElementById('currentMonthYear');
@@ -2437,19 +2439,31 @@ function renderCalendar(month,year){
   const currentDate=new Date(year,month,day);
   const dateString=formatDateForComparison(currentDate);
   
-  if(noDeliveryDates.includes(dateString)){
-   dayElement.classList.add('no-delivery','disabled');
-  }else if(specialDates[dateString]){ // PRIMEIRO VERIFICA SE É DATA ESPECIAL
+  // PRIORIDADE 1: Verificar se é data especial PRIMEIRO
+  if(specialDates[dateString]){
    dayElement.classList.add('special-day');
-  }else if(currentDate<today){
+   // Não marca como disabled mesmo sendo feriado, pois tem horários especiais
+  }
+  // PRIORIDADE 2: Verificar se é data sem entrega
+  else if(noDeliveryDates.includes(dateString)){
+   dayElement.classList.add('no-delivery','disabled');
+  }
+  // PRIORIDADE 3: Verificar se é data passada
+  else if(currentDate<today){
    dayElement.classList.add('disabled');
-  }else if(currentDate<minDate){
+  }
+  // PRIORIDADE 4: Verificar prazo mínimo
+  else if(currentDate<minDate){
    dayElement.classList.add('disabled');
    dayElement.title=`Prazo mínimo: ${prazoMinimo} dia(s)`;
-  }else if(currentDate.getDate()===today.getDate()&&currentDate.getMonth()===today.getMonth()&&currentDate.getFullYear()===today.getFullYear()){
+  }
+  // PRIORIDADE 5: Verificar disponibilidade de horários para hoje
+  else if(currentDate.getDate()===today.getDate()&&currentDate.getMonth()===today.getMonth()&&currentDate.getFullYear()===today.getFullYear()){
    const now=new Date();
    const dayOfWeek=currentDate.getDay();
    let routes=[];
+   
+   // Verifica se hoje é data especial
    if(specialDates[dateString]){
     routes=specialDates[dateString].horarios;
    }else if(dayOfWeek===0){
@@ -2476,7 +2490,7 @@ function renderCalendar(month,year){
    }
   }
   
-  if(!dayElement.classList.contains('disabled')&&!dayElement.classList.contains('no-delivery')){
+  if(!dayElement.classList.contains('disabled')){
    dayElement.addEventListener('click',function(){
     selectDate(currentDate);
    });
@@ -2490,29 +2504,52 @@ function renderCalendar(month,year){
  }
  
  if(prazoMinimo>0){
-  const todayElement=document.querySelector('.calendar-day:not(.disabled)');
-  if(todayElement){
-   const infoMessage=document.createElement('div');
-   infoMessage.className='alert alert-info';
-   infoMessage.style.marginTop='10px';
-   infoMessage.style.fontSize='12px';
-   infoMessage.innerHTML=`<i class="fas fa-info-circle"></i> <strong>Prazo mínimo:</strong> ${prazoMinimo} dia(s) - Dias bloqueados: hoje${prazoMinimo>1?` até ${prazoMinimo-1} dia(s) após hoje`:''}`;
-   const calendarContainer=document.getElementById('calendarContainer');
-   if(calendarContainer){
-    calendarContainer.appendChild(infoMessage);
-   }
+  const infoMessage=document.createElement('div');
+  infoMessage.className='alert alert-info';
+  infoMessage.style.marginTop='10px';
+  infoMessage.style.fontSize='12px';
+  infoMessage.innerHTML=`<i class="fas fa-info-circle"></i> <strong>Prazo mínimo:</strong> ${prazoMinimo} dia(s)`;
+  const calendarContainer=document.getElementById('calendarContainer');
+  if(calendarContainer){
+   calendarContainer.appendChild(infoMessage);
   }
  }
 }
 
+// Substitua a função selectDate existente por esta:
+
 function selectDate(date){
     const dateString = formatDateForComparison(date);
+    
+ // PRIORIDADE 1: Verificar se é data especial
+ if(specialDates[dateString]){
+  // Data especial - permitir seleção
+  selectedDate = date;
+  document.getElementById('noDeliveryMessage').classList.add('hidden');
+  
+  document.querySelectorAll('.calendar-day').forEach(day => {
+   day.classList.remove('selected');
+  });
+  
+  const days = document.querySelectorAll('.calendar-day');
+  days.forEach(day => {
+   if(parseInt(day.textContent) === date.getDate() && !isNaN(parseInt(day.textContent))) {
+    day.classList.add('selected');
+   }
+  });
+  
+  renderTimeOptions(date, true); // true = é data especial
+  return;
+ }
+ 
+ // PRIORIDADE 2: Verificar se é data sem entrega
  if(noDeliveryDates.includes(dateString)){
   document.getElementById('noDeliveryMessage').classList.remove('hidden');
   document.getElementById('timeOptions').classList.add('hidden');
   return;
  }
  
+ // PRIORIDADE 3: Verificar prazo mínimo
  const today = new Date();
  today.setHours(0,0,0,0);
  const minDate = new Date();
@@ -2538,6 +2575,10 @@ function selectDate(date){
   }
  });
  
+ renderTimeOptions(date, false);
+}
+
+function renderTimeOptions(date, isSpecialDate){
  const dayOfWeek = date.getDay();
  const optionsContainer = document.getElementById('deliveryOptionsContainer');
  if(!optionsContainer) return;
@@ -2551,13 +2592,12 @@ function selectDate(date){
  const now = new Date();
  const currentHour = now.getHours();
  const currentMinutes = now.getMinutes();
+ const dateString = formatDateForComparison(date);
  
  let routes = [];
  
- // VERIFICA PRIMEIRO SE É DATA ESPECIAL
- const isSpecialDate = specialDates[dateString];
- 
- if(isSpecialDate){
+ // Verifica se é data especial
+ if(isSpecialDate || specialDates[dateString]){
    const specialDay = specialDates[dateString];
    routes = specialDay.horarios;
    
@@ -2566,9 +2606,9 @@ function selectDate(date){
    specialHeader.innerHTML = `<p><strong>${specialDay.descricao}:</strong> Horários especiais para este dia.</p>`;
    optionsContainer.appendChild(specialHeader);
    
-   console.log('DATA ESPECIAL DETECTADA:', dateString, routes); // Para debug
+   console.log('DATA ESPECIAL DETECTADA:', dateString, routes);
  } 
- // SE NÃO FOR DATA ESPECIAL, USA HORÁRIOS NORMAIS
+ // Se não for data especial, usa horários normais
  else if(dayOfWeek === 0){
    routes = routeTimes.sunday;
  } else if(dayOfWeek === 6){
@@ -2577,7 +2617,7 @@ function selectDate(date){
    routes = routeTimes.weekday;
  }
  
- // APLICA CONTROLE DE ROTAS (OCULTAR PRIMEIRA ROTA APÓS 18H)
+ // Aplica controle de rotas
  const controleRotas = aplicarControleRotas(date);
  let ocultarPrimeiraRota = false;
  let ocultarTodasRotas = false;
@@ -2654,7 +2694,7 @@ function selectDate(date){
    container.appendChild(label);
    routeElement.appendChild(container);
    
-   // MODIFICADO: Verifica se é data especial para não cobrar taxa
+   // Verifica se é data especial para não cobrar taxa
    input.addEventListener('change', function() {
     selectedTime = this.value;
     selectedTimeLabel = this.getAttribute('data-label');
@@ -2682,7 +2722,6 @@ function selectDate(date){
  document.getElementById('timeOptions').classList.remove('hidden');
  window.dispatchEvent(new CustomEvent('dateSelected'));
 }
-
 function resetCalendar(){
  document.getElementById('noDeliveryMessage').classList.add('hidden');
  document.getElementById('timeOptions').classList.add('hidden');
