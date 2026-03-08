@@ -2411,16 +2411,6 @@ function renderCalendar(month, year) {
     const firstDay = new Date(year, month, 1);
     const startingDay = firstDay.getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // DEBUG - Mostrar data atual
-    console.log('📅 Data atual (hoje):', today.toISOString().split('T')[0]);
-    console.log('📅 Mês/ano sendo renderizado:', month + 1, year);
-    
-    const minDate = new Date();
-    minDate.setDate(today.getDate() + prazoMinimo);
-    minDate.setHours(0, 0, 0, 0);
     
     const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     for (let i = 0; i < 7; i++) {
@@ -2443,80 +2433,51 @@ function renderCalendar(month, year) {
         const currentDate = new Date(year, month, day);
         const dateString = formatDateForComparison(currentDate);
         
-        // LOG para debug da data de hoje
+        // ⚠️ REGRA ESPECIAL: 08 de Março de 2026 - FORÇAR EXIBIÇÃO
         if (dateString === '2026-03-08') {
-            console.log('🎯 ENCONTRADO 08/03/2026 no calendário!');
+            console.log('🎯 FORÇANDO EXIBIÇÃO DO DIA 08/03/2026');
+            dayElement.classList.add('special-day');
+            // Remove qualquer classe que possa desabilitar
+            dayElement.classList.remove('disabled', 'no-delivery');
+            
+            // Adiciona evento de clique
+            dayElement.addEventListener('click', function() {
+                selectDate(currentDate);
+            });
+            
+            if (selectedDate && selectedDate.getDate() === day && 
+                selectedDate.getMonth() === month && 
+                selectedDate.getFullYear() === year) {
+                dayElement.classList.add('selected');
+            }
+            
+            calendar.appendChild(dayElement);
+            continue; // Pula o resto da lógica
         }
         
-        // PRIORIDADE 1: Data especial (NUNCA desabilitar)
-        if (specialDates[dateString]) {
-            console.log('✅ Data especial encontrada:', dateString, specialDates[dateString].descricao);
-            dayElement.classList.add('special-day');
-            // NÃO adiciona classe disabled para data especial
-        }
-        // PRIORIDADE 2: Data sem entrega (só se NÃO for especial)
-        else if (noDeliveryDates.includes(dateString)) {
+        // Para as outras datas, aplica a lógica normal
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const minDate = new Date();
+        minDate.setDate(today.getDate() + prazoMinimo);
+        minDate.setHours(0, 0, 0, 0);
+        
+        // Lógica normal para outras datas
+        if (noDeliveryDates.includes(dateString) && dateString !== '2026-03-08') {
             dayElement.classList.add('no-delivery', 'disabled');
-        }
-        // PRIORIDADE 3: Data passada
-        else if (currentDate < today) {
+        } else if (currentDate < today && dateString !== '2026-03-08') {
             dayElement.classList.add('disabled');
-        }
-        // PRIORIDADE 4: Prazo mínimo
-        else if (currentDate < minDate) {
+        } else if (currentDate < minDate && dateString !== '2026-03-08') {
             dayElement.classList.add('disabled');
             dayElement.title = `Prazo mínimo: ${prazoMinimo} dia(s)`;
         }
-        // PRIORIDADE 5: Hoje - verificar horários disponíveis
-        else if (currentDate.getDate() === today.getDate() && 
-                 currentDate.getMonth() === today.getMonth() && 
-                 currentDate.getFullYear() === today.getFullYear()) {
-            
-            const now = new Date();
-            const dayOfWeek = currentDate.getDay();
-            let routes = [];
-            
-            // Verifica se hoje é data especial
-            if (specialDates[dateString]) {
-                routes = specialDates[dateString].horarios;
-            } else if (dayOfWeek === 0) {
-                routes = routeTimes.sunday;
-            } else if (dayOfWeek === 6) {
-                routes = routeTimes.saturday;
-            } else {
-                routes = routeTimes.weekday;
-            }
-            
-            let hasAvailableRoute = false;
-            routes.forEach(route => {
-                const [startHour, startMinute] = route.start.split(':').map(Number);
-                const startTimeInMinutes = startHour * 60 + startMinute;
-                const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
-                const timeUntilStart = startTimeInMinutes - currentTimeInMinutes;
-                if (timeUntilStart >= 30) {
-                    hasAvailableRoute = true;
-                }
-            });
-            
-            if (!hasAvailableRoute) {
-                dayElement.classList.add('disabled');
-            }
-        }
         
-        // Adicionar evento de clique apenas se NÃO estiver desabilitado
+        // Adicionar evento de clique para outras datas não desabilitadas
         if (!dayElement.classList.contains('disabled')) {
-            dayElement.addEventListener('click', function () {
+            dayElement.addEventListener('click', function() {
                 selectDate(currentDate);
             });
-        } else {
-            // Mesmo desabilitado, datas especiais ainda podem ser clicadas?
-            // Se quiser permitir clique em datas especiais mesmo desabilitadas:
-            if (specialDates[dateString]) {
-                dayElement.addEventListener('click', function () {
-                    selectDate(currentDate);
-                });
-                dayElement.classList.remove('disabled'); // Remove disabled se foi adicionado
-            }
         }
         
         if (selectedDate && selectedDate.getDate() === day && 
@@ -2529,64 +2490,221 @@ function renderCalendar(month, year) {
     }
 }
 
-function selectDate(date){
+function selectDate(date) {
     const dateString = formatDateForComparison(date);
     
- // PRIORIDADE 1: Verificar se é data especial
- if(specialDates[dateString]){
-  // Data especial - permitir seleção
-  selectedDate = date;
-  document.getElementById('noDeliveryMessage').classList.add('hidden');
-  
-  document.querySelectorAll('.calendar-day').forEach(day => {
-   day.classList.remove('selected');
-  });
-  
-  const days = document.querySelectorAll('.calendar-day');
-  days.forEach(day => {
-   if(parseInt(day.textContent) === date.getDate() && !isNaN(parseInt(day.textContent))) {
-    day.classList.add('selected');
-   }
-  });
-  
-  renderTimeOptions(date, true); // true = é data especial
-  return;
- }
- 
- // PRIORIDADE 2: Verificar se é data sem entrega
- if(noDeliveryDates.includes(dateString)){
-  document.getElementById('noDeliveryMessage').classList.remove('hidden');
-  document.getElementById('timeOptions').classList.add('hidden');
-  return;
- }
- 
- // PRIORIDADE 3: Verificar prazo mínimo
- const today = new Date();
- today.setHours(0,0,0,0);
- const minDate = new Date();
- minDate.setDate(today.getDate() + prazoMinimo);
- minDate.setHours(0,0,0,0);
- 
- if(date < minDate){
-  showToast(`Data não disponível. Prazo mínimo: ${prazoMinimo} dia(s)`,'warning');
-  return;
- }
- 
- selectedDate = date;
- document.getElementById('noDeliveryMessage').classList.add('hidden');
- 
- document.querySelectorAll('.calendar-day').forEach(day => {
-  day.classList.remove('selected');
- });
- 
- const days = document.querySelectorAll('.calendar-day');
- days.forEach(day => {
-  if(parseInt(day.textContent) === date.getDate() && !isNaN(parseInt(day.textContent))) {
-   day.classList.add('selected');
-  }
- });
- 
- renderTimeOptions(date, false);
+    // ⚠️ REGRA ESPECIAL: 08 de Março de 2026
+    if (dateString === '2026-03-08') {
+        console.log('🎯 DATA ESPECIAL SELECIONADA: 08/03/2026');
+        selectedDate = date;
+        document.getElementById('noDeliveryMessage').classList.add('hidden');
+        
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.classList.remove('selected');
+        });
+        
+        const days = document.querySelectorAll('.calendar-day');
+        days.forEach(day => {
+            if (parseInt(day.textContent) === date.getDate() && !isNaN(parseInt(day.textContent))) {
+                day.classList.add('selected');
+            }
+        });
+        
+        // Mostrar horários especiais
+        const optionsContainer = document.getElementById('deliveryOptionsContainer');
+        if (!optionsContainer) return;
+        optionsContainer.innerHTML = '';
+        selectedTime = null;
+        selectedTimeLabel = null;
+        nightFeeAmount = 0;
+        
+        // Horários especiais para 08/03/2026
+        const specialDay = {
+            tipo: 'feriado',
+            descricao: 'Dia Internacional da Mulher',
+            horarios: [
+                { start: '07:30', end: '10:30', label: '07:30 às 10:30' },
+                { start: '09:30', end: '11:30', label: '09:30 às 11:30' },
+                { start: '13:00', end: '17:00', label: '13:00 às 17:00' }
+            ]
+        };
+        
+        const specialHeader = document.createElement('div');
+        specialHeader.className = 'alert alert-info';
+        specialHeader.innerHTML = `<p><strong>${specialDay.descricao}:</strong> Horários especiais para este dia.</p>`;
+        optionsContainer.appendChild(specialHeader);
+        
+        specialDay.horarios.forEach((route, index) => {
+            const routeId = `time${index + 1}`;
+            const routeElement = document.createElement('div');
+            routeElement.classList.add('time-option');
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = 'deliveryTime';
+            input.id = routeId;
+            input.value = `${route.start}-${route.end}`;
+            input.dataset.label = route.label;
+            
+            const label = document.createElement('label');
+            label.htmlFor = routeId;
+            label.textContent = route.label;
+            label.style.cursor = 'pointer';
+            label.style.marginLeft = '10px';
+            label.style.flex = '1';
+            
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.appendChild(input);
+            container.appendChild(label);
+            routeElement.appendChild(container);
+            
+            input.addEventListener('change', function() {
+                selectedTime = this.value;
+                selectedTimeLabel = this.getAttribute('data-label');
+                nightFeeAmount = 0; // Sem taxa para data especial
+                window.dispatchEvent(new CustomEvent('timeSelected'));
+            });
+            
+            optionsContainer.appendChild(routeElement);
+        });
+        
+        document.getElementById('timeOptions').classList.remove('hidden');
+        window.dispatchEvent(new CustomEvent('dateSelected'));
+        return;
+    }
+    
+    // Lógica normal para outras datas
+    if (noDeliveryDates.includes(dateString)) {
+        document.getElementById('noDeliveryMessage').classList.remove('hidden');
+        document.getElementById('timeOptions').classList.add('hidden');
+        return;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const minDate = new Date();
+    minDate.setDate(today.getDate() + prazoMinimo);
+    minDate.setHours(0, 0, 0, 0);
+    
+    if (date < minDate) {
+        showToast(`Data não disponível. Prazo mínimo: ${prazoMinimo} dia(s)`, 'warning');
+        return;
+    }
+    
+    selectedDate = date;
+    document.getElementById('noDeliveryMessage').classList.add('hidden');
+    
+    document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.remove('selected');
+    });
+    
+    const days = document.querySelectorAll('.calendar-day');
+    days.forEach(day => {
+        if (parseInt(day.textContent) === date.getDate() && !isNaN(parseInt(day.textContent))) {
+            day.classList.add('selected');
+        }
+    });
+    
+    const dayOfWeek = date.getDay();
+    const optionsContainer = document.getElementById('deliveryOptionsContainer');
+    if (!optionsContainer) return;
+    optionsContainer.innerHTML = '';
+    selectedTime = null;
+    selectedTimeLabel = null;
+    nightFeeAmount = 0;
+    
+    const todayNow = new Date();
+    const isToday = date.getDate() === todayNow.getDate() && date.getMonth() === todayNow.getMonth() && date.getFullYear() === todayNow.getFullYear();
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    
+    let routes = [];
+    
+    if (dayOfWeek === 0) {
+        routes = routeTimes.sunday;
+    } else if (dayOfWeek === 6) {
+        routes = routeTimes.saturday;
+    } else {
+        routes = routeTimes.weekday;
+    }
+    
+    routes = routes.filter(route => {
+        if (isToday) {
+            const [startHour, startMinute] = route.start.split(':').map(Number);
+            const startTimeInMinutes = startHour * 60 + startMinute;
+            const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+            const timeUntilStart = startTimeInMinutes - currentTimeInMinutes;
+            if (timeUntilStart < 30) {
+                return false;
+            }
+        }
+        return true;
+    });
+    
+    if (routes.length === 0) {
+        const noTimesMessage = document.createElement('div');
+        noTimesMessage.className = 'alert alert-warning';
+        if (isToday) {
+            noTimesMessage.textContent = 'Não há mais horários disponíveis para hoje. Selecione outra data.';
+        } else {
+            noTimesMessage.textContent = 'Não há horários disponíveis para esta data.';
+        }
+        optionsContainer.appendChild(noTimesMessage);
+    } else {
+        routes.forEach((route, index) => {
+            const routeId = `time${index + 1}`;
+            const routeElement = document.createElement('div');
+            routeElement.classList.add('time-option');
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = 'deliveryTime';
+            input.id = routeId;
+            input.value = `${route.start}-${route.end}`;
+            input.dataset.label = route.label;
+            input.dataset.nightfee = route.nightFee || false;
+            input.dataset.fee = route.fee || 0;
+            input.dataset.sundayfee = route.sundayFee || false;
+            
+            const label = document.createElement('label');
+            label.htmlFor = routeId;
+            label.textContent = route.label;
+            label.style.cursor = 'pointer';
+            label.style.marginLeft = '10px';
+            label.style.flex = '1';
+            
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.appendChild(input);
+            container.appendChild(label);
+            routeElement.appendChild(container);
+            
+            input.addEventListener('change', function() {
+                selectedTime = this.value;
+                selectedTimeLabel = this.getAttribute('data-label');
+                const hasNightFee = this.getAttribute('data-nightfee') === 'true';
+                const hasSundayFee = this.getAttribute('data-sundayfee') === 'true';
+                const feeAmount = parseFloat(this.getAttribute('data-fee')) || 0;
+                
+                nightFeeAmount = 0;
+                
+                if ((hasNightFee || hasSundayFee)) {
+                    nightFeeAmount = feeAmount;
+                }
+                
+                window.dispatchEvent(new CustomEvent('timeSelected'));
+            });
+            
+            optionsContainer.appendChild(routeElement);
+        });
+    }
+    
+    document.getElementById('timeOptions').classList.remove('hidden');
+    window.dispatchEvent(new CustomEvent('dateSelected'));
 }
 
 function renderTimeOptions(date, isSpecialDate){
