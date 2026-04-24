@@ -928,7 +928,30 @@ const shippingRates={
 'Nova Lima (Vila da Serra)':[{min:1,max:119.99,cost:29.90},{min:120,max:178.99,cost:24.90},{min:179,max:99999,cost:19.90}]
 };
 const noDeliveryDates=['2024-12-25','2024-12-31','2025-01-01','2025-04-21','2025-05-01','2025-09-07','2025-10-12','2025-11-02','2025-11-15'];
-const specialDates={'2024-12-24':{tipo:'feriado',descricao:'Véspera de Natal',horarios:[{start:'07:30',end:'10:30',label:'07:30 às 10:30'},{start:'09:30',end:'11:30',label:'09:30 às 11:30'},{start:'13:30',end:'15:30',label:'13:30 às 15:30'},{start:'15:30',end:'17:30',label:'15:30 às 17:30'},{start:'18:30',end:'20:30',label:'18:30 às 20:30'}]}};
+const specialDates={
+    '2024-12-24':{
+        tipo:'feriado',
+        descricao:'Véspera de Natal',
+        horarios:[
+            {start:'07:30',end:'10:30',label:'07:30 às 10:30'},
+            {start:'09:30',end:'11:30',label:'09:30 às 11:30'},
+            {start:'13:30',end:'15:30',label:'13:30 às 15:30'},
+            {start:'15:30',end:'17:30',label:'15:30 às 17:30'},
+            {start:'18:30',end:'20:30',label:'18:30 às 20:30'}
+        ]
+    },
+    '2025-05-10':{
+        tipo:'especial',
+        descricao:'Data Especial - 10 de Maio',
+        horarios:[
+            {start:'08:00',end:'10:00',label:'08:00 às 10:00'},
+            {start:'10:00',end:'12:00',label:'10:00 às 12:00'},
+            {start:'13:00',end:'15:00',label:'13:00 às 15:00'},
+            {start:'15:00',end:'17:00',label:'15:00 às 17:00'},
+            {start:'18:00',end:'20:00',label:'18:00 às 20:00'}
+        ]
+    }
+};
 const routeTimes={
 weekday:[{start:'07:30',end:'11:30',label:'07:30 às 11:30'},{start:'09:30',end:'11:30',label:'09:30 às 11:30'},{start:'13:30',end:'15:30',label:'13:30 às 15:30'},{start:'15:30',end:'18:30',label:'15:30 às 18:30'},{start:'19:30',end:'21:30',label:'19:30 às 21:30 (taxa noturna adicional 19,90)',nightFee:true,fee:19.90}],
 saturday:[{start:'07:30',end:'10:30',label:'07:30 às 10:30'},{start:'10:30',end:'12:30',label:'10:30 às 12:30'},{start:'12:30',end:'16:30',label:'12:30 às 16:30'}],
