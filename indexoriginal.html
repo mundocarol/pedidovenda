@@ -928,9 +928,41 @@ const shippingRates={
 'Nova Lima (Vila da Serra)':[{min:1,max:119.99,cost:29.90},{min:120,max:178.99,cost:24.90},{min:179,max:99999,cost:19.90}]
 };
 const noDeliveryDates=['2024-12-25','2024-12-31','2025-01-01','2025-04-21','2025-05-01','2025-09-07','2025-10-12','2025-11-02','2025-11-15'];
-const specialDates={'2024-12-24':{tipo:'feriado',descricao:'Véspera de Natal',horarios:[{start:'07:30',end:'10:30',label:'07:30 às 10:30'},{start:'09:30',end:'11:30',label:'09:30 às 11:30'},{start:'13:30',end:'15:30',label:'13:30 às 15:30'},{start:'15:30',end:'17:30',label:'15:30 às 17:30'},{start:'18:30',end:'20:30',label:'18:30 às 20:30'}]}};
+const specialDates={
+    '2024-12-24':{
+        tipo:'feriado',
+        descricao:'Véspera de Natal',
+        horarios:[
+            {start:'07:30',end:'10:30',label:'07:30 às 10:30'},
+            {start:'09:30',end:'11:30',label:'09:30 às 11:30'},
+            {start:'13:30',end:'15:30',label:'13:30 às 15:30'},
+            {start:'15:30',end:'17:30',label:'15:30 às 17:30'},
+            {start:'18:30',end:'20:30',label:'18:30 às 20:30'}
+        ]
+    },
+   '2026-05-09': {
+    tipo: 'especial',
+    descricao: 'Véspera do Dia das Mães',
+    horarios: [
+        {start:'08:30',end:'11:30',label:'08:30 às 11:30'},
+        {start:'09:30',end:'12:30',label:'09:30 às 12:30'},
+        {start:'11:30',end:'14:30',label:'11:30 às 14:30'},
+        {start:'14:30',end:'16:30',label:'14:30 às 16:30'},
+        {start:'16:30',end:'20:30',label:'16:30 às 20:30'}
+    ]
+},
+    
+    '2026-05-10': {
+        tipo: 'especial',
+        descricao: 'Dia das Mães',
+        horarios: [
+            {start:'07:30',end:'11:50',label:'07:30 às 11:50 (taxa adicional R$ 19,90)', sundayFee: true, fee: 19.90},
+            {start:'13:30',end:'17:50',label:'13:30 às 17:50'}
+        ]
+    }
+};
 const routeTimes={
-weekday:[{start:'07:30',end:'09:30',label:'07:30 às 09:30'},{start:'09:30',end:'11:30',label:'09:30 às 11:30'},{start:'13:30',end:'15:30',label:'13:30 às 15:30'},{start:'15:30',end:'17:30',label:'15:30 às 17:30'},{start:'19:30',end:'21:30',label:'19:30 às 21:30 (taxa noturna adicional 19,90)',nightFee:true,fee:19.90}],
+weekday:[{start:'07:30',end:'11:30',label:'07:30 às 11:30'},{start:'09:30',end:'11:30',label:'09:30 às 11:30'},{start:'13:30',end:'15:30',label:'13:30 às 15:30'},{start:'15:30',end:'18:30',label:'15:30 às 18:30'},{start:'19:30',end:'21:30',label:'19:30 às 21:30 (taxa noturna adicional 19,90)',nightFee:true,fee:19.90}],
 saturday:[{start:'07:30',end:'10:30',label:'07:30 às 10:30'},{start:'10:30',end:'12:30',label:'10:30 às 12:30'},{start:'12:30',end:'16:30',label:'12:30 às 16:30'}],
 sunday:[{start:'08:00',end:'10:00',label:'08:00 às 10:00 (taxa adicional 19,90)',sundayFee:true,fee:19.90}]
 };
@@ -4613,3 +4645,4 @@ console.log('✅ Sistema de envio simplificado: ATIVO (sem duplicação)');
 </script>
 </body>
 </html>
+
