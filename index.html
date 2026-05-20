@@ -3162,43 +3162,46 @@ if(totalSection)totalSection.classList.remove('hidden');
 }
 
 function getTotalWithShipping(){
-const{total}=getAllProducts();
-let finalTotal=total;
+    const{total}=getAllProducts();
+    let finalTotal=total;
 
-finalTotal-=couponDiscount;
+    finalTotal-=couponDiscount;
 
-if(currentDeliveryType==='delivery'){
-if(isOtherCity){
-finalTotal+=freteValor;
-}else if(!isOtherCity){
-let shippingCost=calculatedShipping;
-if(freteGratis){
-shippingCost=0;
-}else if(descontoFreteValor>0){
-shippingCost-=descontoFreteValor;
-if(shippingCost<0)shippingCost=0;
-}
-if(freeShippingCoupon){
-shippingCost=0;
-}else if(shippingDiscount>0){
-shippingCost-=shippingDiscount;
-if(shippingCost<0)shippingCost=0;
-}
-finalTotal+=shippingCost;
-}
-}
+    if(currentDeliveryType==='delivery'){
+        if(isOtherCity){
+            finalTotal+=freteValor;
+        }else if(!isOtherCity){
+            let shippingCost=calculatedShipping;
+            if(freteGratis){
+                shippingCost=0;
+            }else if(descontoFreteValor>0){
+                shippingCost-=descontoFreteValor;
+                if(shippingCost<0)shippingCost=0;
+            }
+            if(freeShippingCoupon){
+                shippingCost=0;
+            }else if(shippingDiscount>0){
+                shippingCost-=shippingDiscount;
+                if(shippingCost<0)shippingCost=0;
+            }
+            finalTotal+=shippingCost;
+        }
+    }
 
-finalTotal+=(nightFeeAmount||0);
+    // CORREÇÃO: Garantir que a taxa noturna/domingo seja SOMADA (não subtraída)
+    if(nightFeeAmount > 0){
+        finalTotal += nightFeeAmount;
+    }
 
-if(addCustomTax){
-finalTotal+=(taxaPersonalizadaValor||0);
-}
+    if(addCustomTax){
+        finalTotal += (taxaPersonalizadaValor||0);
+    }
 
-if(!appliedCoupon||!couponExcludesPixDiscount){
-finalTotal-=pixDiscount;
-}
+    if(!appliedCoupon||!couponExcludesPixDiscount){
+        finalTotal -= pixDiscount;
+    }
 
-return finalTotal<0?0:finalTotal;
+    return finalTotal<0?0:finalTotal;
 }
 
 function getProductTotalForSpreadsheet(){
