@@ -2603,10 +2603,10 @@ input.type='radio';
 input.name='deliveryTime';
 input.id=routeId;
 input.value=`${route.start}-${route.end}`;
-input.dataset.label=route.label;
-input.dataset.nightFee=route.nightFee||false;
-input.dataset.sundayFee=route.sundayFee||false;
-input.dataset.fee=route.fee||0;
+input.setAttribute('data-label', route.label);
+input.setAttribute('data-nightFee', route.nightFee ? 'true' : 'false');
+input.setAttribute('data-sundayFee', route.sundayFee ? 'true' : 'false');
+input.setAttribute('data-fee', route.fee || '0');
 
 const label=document.createElement('label');
 label.htmlFor=routeId;
@@ -2625,14 +2625,29 @@ routeElement.appendChild(container);
 input.addEventListener('change',function(){
 selectedTime=this.value;
 selectedTimeLabel=this.getAttribute('data-label');
-const hasNightFee=this.getAttribute('data-nightFee')==='true';
-const hasSundayFee=this.getAttribute('data-sundayFee')==='true';
-const feeAmount=parseFloat(this.getAttribute('data-fee'))||0;
-nightFeeAmount=0;
-if(hasNightFee||hasSundayFee){
-nightFeeAmount=feeAmount;
+
+let hasTaxa=false;
+let valorTaxa=0;
+
+const nightFeeAttr=this.getAttribute('data-nightFee');
+const sundayFeeAttr=this.getAttribute('data-sundayFee');
+const feeAttr=parseFloat(this.getAttribute('data-fee'))||0;
+
+if(nightFeeAttr==='true'||sundayFeeAttr==='true'){
+hasTaxa=true;
+valorTaxa=feeAttr;
 }
-console.log('✅ Taxa aplicada: R$', nightFeeAmount, 'para o horário:', selectedTimeLabel);
+
+if(!hasTaxa&&selectedTimeLabel&&selectedTimeLabel.includes('taxa adicional')){
+const match=selectedTimeLabel.match(/R\$\s*([0-9,]+)/);
+if(match){
+hasTaxa=true;
+valorTaxa=parseFloat(match[1].replace(',','.'));
+}
+}
+
+nightFeeAmount=hasTaxa?valorTaxa:0;
+
 if(document.getElementById('page6').classList.contains('active')){
 updateReviewData();
 }
