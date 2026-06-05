@@ -914,18 +914,17 @@ const coupons={
 'FRETEGRATIS':{type:'free_shipping',value:0,description:'Frete grátis para Belo Horizonte',cities:['Belo Horizonte'],validUntil:'2024-12-31',excludesPixDiscount:true,limit:1,unlimited:false},
 'DESCONTOFRETE20':{type:'shipping_discount',value:20,description:'R$ 20,00 de desconto no frete',validUntil:'2024-12-31',excludesPixDiscount:false,limit:1,unlimited:false}
 };
-const shippingRates={
-'Belo Horizonte':[{min:1,max:119.99,cost:19.90},{min:120,max:178.99,cost:14.90},{min:179,max:99999,cost:0.00}],
-'Betim':[{min:1,max:119.99,cost:49.90},{min:120,max:178.99,cost:44.90},{min:179,max:99999,cost:39.90}],
-'Contagem':[{min:1,max:119.99,cost:29.90},{min:120,max:178.99,cost:24.90},{min:179,max:99999,cost:19.90}],
-'Sabará':[{min:1,max:119.99,cost:29.90},{min:120,max:178.99,cost:26.90},{min:179,max:99999,cost:22.90}],
-'Ibirité':[{min:1,max:119.99,cost:59.90},{min:120,max:178.99,cost:49.90},{min:179,max:99999,cost:39.90}],
-'Ribeirão das Neves':[{min:1,max:119.99,cost:59.90},{min:120,max:178.99,cost:49.90},{min:179,max:99999,cost:44.90}],
-'Santa Luzia':[{min:1,max:119.99,cost:49.90},{min:120,max:178.99,cost:39.90},{min:179,max:99999,cost:29.90}],
-'Vespasiano':[{min:1,max:119.99,cost:49.90},{min:120,max:178.99,cost:44.90},{min:179,max:99999,cost:39.90}],
-'Lagoa Santa':[{min:1,max:119.99,cost:59.90},{min:120,max:178.99,cost:54.90},{min:179,max:99999,cost:44.90}],
-'Nova Lima':[{min:1,max:119.99,cost:69.90},{min:120,max:178.99,cost:59.90},{min:179,max:99999,cost:49.90}],
-'Nova Lima (Vila da Serra)':[{min:1,max:119.99,cost:29.90},{min:120,max:178.99,cost:24.90},{min:179,max:99999,cost:19.90}]
+const shippingRates = {
+    'Belo Horizonte': [{ min: 1, max: 120.00, cost: 17.90 }, { min: 120.01, max: 179.89, cost: 14.90 }, { min: 179.90, max: 99999, cost: 0.00 }],
+    'Betim': [{ min: 1, max: 120.00, cost: 69.90 }, { min: 120.01, max: 179.89, cost: 54.90 }, { min: 179.90, max: 99999, cost: 44.90 }],
+    'Contagem': [{ min: 1, max: 120.00, cost: 29.90 }, { min: 120.01, max: 179.89, cost: 24.90 }, { min: 179.90, max: 99999, cost: 19.90 }],
+    'Sabará': [{ min: 1, max: 120.00, cost: 39.90 }, { min: 120.01, max: 179.89, cost: 26.90 }, { min: 179.90, max: 99999, cost: 22.90 }],
+    'Ibirité': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 179.89, cost: 54.90 }, { min: 179.90, max: 99999, cost: 44.90 }],
+    'Ribeirão das Neves': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 179.89, cost: 54.90 }, { min: 179.90, max: 99999, cost: 44.90 }],
+    'Santa Luzia': [{ min: 1, max: 120.00, cost: 49.90 }, { min: 120.01, max: 179.89, cost: 44.90 }, { min: 179.90, max: 99999, cost: 39.90 }],
+    'Vespasiano': [{ min: 1, max: 120.00, cost: 49.90 }, { min: 120.01, max: 179.89, cost: 44.90 }, { min: 179.90, max: 99999, cost: 39.90 }],
+    'Lagoa Santa': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 179.89, cost: 54.90 }, { min: 179.90, max: 99999, cost: 44.90 }],
+    'Nova Lima': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 179.89, cost: 54.90 }, { min: 179.90, max: 99999, cost: 44.90 }]
 };
 const noDeliveryDates=['2024-12-25','2024-12-31','2025-01-01','2025-04-21','2025-05-01','2025-09-07','2025-10-12','2025-11-02','2025-05-17'];
 const specialDates={
